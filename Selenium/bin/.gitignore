@@ -1,10 +1,5 @@
 /browser/
-/calendar/
-/exceptionhandling/
-/iheritance/
-/methodoverloading/
-/testthread/
-/Philipines/
+/test-output/
 /.classpath
 /.project
 /.settings/
@@ -17,4 +12,3 @@
 /hs_err_pid64368.log
 /hs_err_pid67116.log
 /pom.xml
-/test-output/
