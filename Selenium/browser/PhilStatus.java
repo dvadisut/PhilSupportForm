@@ -31,7 +31,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 
 import com.mysql.cj.result.Row;
-
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 
 import javax.swing.border.BevelBorder;
 import java.awt.Font;
@@ -270,12 +270,16 @@ public class PhilStatus {
 	
 		          model.addRow(rowData);
 		          
+		          /*String CAtten=tatten.getSelectedItem().toString();
+				  String Ctstatus=tstatus.getSelectedItem().toString();
+					
+		          if(CAtten != null || tstatus != null) {
 		          tname.setText("");
 					datei.setText("");
 					tdesc.setText("");
 					tatten.removeAllItems();
 					tstatus.removeAllItems();
-					tnotes.setText("");
+					tnotes.setText("");}*/
 			}}
 		});
 		sub1.setBounds(280, 515, 144, 72);
@@ -285,12 +289,17 @@ public class PhilStatus {
 		btnNewButton_1.setBorder(new CompoundBorder());
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				String CAtten=tatten.getSelectedItem().toString();
+				String Ctstatus=tstatus.getSelectedItem().toString();
+				
+				if(CAtten != null || tstatus != null) {
 				tname.setText("");
 				datei.setText("");
 				tdesc.setText("");
-				tatten.removeAllItems();
-				tstatus.removeAllItems();
-				tnotes.setText("");
+				tatten.getSelectedItem().equals(0);
+				tstatus.getSelectedItem().equals(0);
+				tnotes.setText("");}
 				
 			}
 		});
@@ -342,12 +351,17 @@ public class PhilStatus {
     					((PreparedStatement) insert).executeUpdate();
     					JOptionPane.showMessageDialog((Component) e.getSource(), "Issue Added successfully");
     					
-    					tname.setText("");
-    					datei.setText("");
-    					tdesc.setText("");
-    					tatten.removeAllItems();
-    					tstatus.removeAllItems();
-    					tnotes.setText("");
+    					/*String CAtten=tatten.getSelectedItem().toString();
+    					  String Ctstatus=tstatus.getSelectedItem().toString();
+    						
+    			          if(CAtten != null || tstatus != null) {
+    			          tname.setText("");
+    						datei.setText("");
+    						tdesc.setText("");
+    						tatten.removeAllItems();
+    						tstatus.removeAllItems();
+    						tnotes.setText("");}*/
+
     				}
     				
     	
