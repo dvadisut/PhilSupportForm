@@ -220,6 +220,7 @@ public class Status extends JFrame implements ActionListener{
 					
 			JTableHeader header = table.getTableHeader();
 			header.setBackground(Color.YELLOW);
+			table.getTableHeader().setBackground(Color.YELLOW);
 			JScrollPane pane = new JScrollPane(table);
 			panel.add(pane);
 			add(panel);
