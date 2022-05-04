@@ -20,6 +20,9 @@ import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.sql.RowSetMetaData;
@@ -29,8 +32,14 @@ import java.awt.event.ActionEvent;
 import java.awt.Color;
 import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
+import com.mysql.cj.jdbc.result.ResultSetMetaData;
+import com.mysql.cj.protocol.Resultset;
 import com.mysql.cj.result.Row;
+
+import net.proteanit.sql.DbUtils;
+
 
 
 import javax.swing.border.BevelBorder;
@@ -43,8 +52,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 import java.awt.Toolkit;
+import javax.swing.UIManager;
 
-public class PhilStatus {
+public class PhilStatus  {
 
 	private JFrame frmPhilippinesSupportForm;
 	JComboBox tatten;
@@ -66,7 +76,9 @@ public class PhilStatus {
 	JTable table;
 	DefaultTableModel model;
 	
-
+	
+	
+	
 	private String tattens[]
     		={"","DV/Sujith","Sujith","DV"};
 	
@@ -98,20 +110,13 @@ public class PhilStatus {
 	public PhilStatus() {
 		initialize();
 	}
+
 	
-   public void floop() {
-	   
-	   String CustName=tname.getText();
-		String date= datei.getText();
-		String IssueDesc=tdesc.getText();
-		String AttenBy=tatten.getSelectedItem().toString();
-		String issueStatus=tstatus.getSelectedItem().toString();
-		String Notes=tnotes.getText();
-   }
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	@SuppressWarnings("serial")
 	private void initialize() {
 		frmPhilippinesSupportForm = new JFrame();
 		frmPhilippinesSupportForm.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\DHINAKARAN\\Desktop\\Capture.PNG"));
@@ -130,7 +135,7 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(lblNewLabel_1);
 		
 		JTextArea tdesc = new JTextArea();
-		tdesc.setBounds(122, 69, 195, 81);
+		tdesc.setBounds(132, 71, 195, 81);
 		tdesc.setFont(new Font("Arial", Font.PLAIN, 13));
 		tdesc.setToolTipText("Enter the Issue Description");
 		tdesc.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -138,7 +143,7 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(tdesc);
 		
 		JTextArea tname = new JTextArea();
-		tname.setBounds(122, 36, 195, 22);
+		tname.setBounds(132, 38, 195, 22);
 		tname.setFont(new Font("Arial", Font.PLAIN, 13));
 		tname.setToolTipText("Enter the Customer Name");
 		tname.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -149,11 +154,10 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(lblAttendedBy);
 		
 		tatten = new JComboBox(tattens);
-		tatten.setBounds(122, 170, 195, 22);
+		tatten.setBounds(132, 170, 195, 22);
 		tatten.setToolTipText("Select the Issue Attender");
 		tatten.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		tatten.setAutoscrolls(true);
-		tatten.setEditable(true);
 		frmPhilippinesSupportForm.getContentPane().add(tatten);
 		
 		JLabel lblNewLabel_2 = new JLabel("Issue Date");
@@ -161,7 +165,7 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(lblNewLabel_2);
 		
 		datei = new JTextArea();
-		datei.setBounds(122, 209, 195, 22);
+		datei.setBounds(132, 211, 195, 22);
 		datei.setFont(new Font("Arial", Font.PLAIN, 13));
 		datei.setToolTipText("Enter the Date in YYYY-DD-MM");
 		datei.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -176,7 +180,7 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(lblNewLabel_4);
 		
 		tnotes = new JTextArea();
-		tnotes.setBounds(122, 286, 292, 125);
+		tnotes.setBounds(132, 288, 292, 125);
 		tnotes.setFont(new Font("Arial", Font.PLAIN, 13));
 		tnotes.setToolTipText("Enter the Notes");
 		tnotes.setInheritsPopupMenu(true);
@@ -185,7 +189,7 @@ public class PhilStatus {
 		frmPhilippinesSupportForm.getContentPane().add(tnotes);
 		
 		tstatus = new JComboBox(IssueStatusd);
-		tstatus.setBounds(122, 250, 195, 22);
+		tstatus.setBounds(132, 250, 195, 22);
 		tstatus.setToolTipText("Select the Issue Status");
 		tstatus.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		frmPhilippinesSupportForm.getContentPane().add(tstatus);
@@ -197,40 +201,101 @@ public class PhilStatus {
 		
 		JButton btnNewButton = new JButton("Submit Data to DB");
 		btnNewButton.setBounds(72, 515, 144, 72);
-		btnNewButton.setBorder(new CompoundBorder());
+		btnNewButton.setBorder(UIManager.getBorder("Button.border"));
 		frmPhilippinesSupportForm.getContentPane().add(btnNewButton);
 		
 		
 		JScrollPane scrollPane = new JScrollPane();
+		
+		scrollPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				try {
+					
+					int row =table_7.getSelectedRow();
+					
+					String Date=(String) (table_7.getModel().getValueAt(row, 0)).toString();
+					//String CustName=(String) (table_7.getModel().getValueAt(row, 1)).toString();
+					//String IssueDesc=(String) (table_7.getModel().getValueAt(row, 2)).toString();
+					//String Notes=(String) (table_7.getModel().getValueAt(row, 5)).toString();
+					
+					
+					Class.forName("com.mysql.cj.jdbc.Driver");
+    				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+    				PreparedStatement insert = con.prepareStatement("SELECT * FROM apglobal where Date='"+Date+"' ");
+    				insert.setString(3, (String)tatten.getSelectedItem());
+    				insert.setString(4, (String)tatten.getSelectedItem());
+    				ResultSet rs=insert.executeQuery();
+    				
+    				while(rs.next()) {
+    					datei.setText(rs.getString("Date"));
+    					tname.setText(rs.getString("CustName"));
+    					tdesc.setText(rs.getString("IssueDesc"));
+    					tnotes.setText(rs.getString("Notes"));
+    					System.out.println(""+datei);
+    				}
+    				insert.close();
+				}
+				   
+				catch (Exception e5) {
+					// TODO: handle exception
+				}
+			}
+		});
+				
+				/*DefaultTableModel df=(DefaultTableModel)table_7.getModel();
+				int selectedIndex=table_7.getSelectedRow();
+				datei.setText(df.getValueAt(selectedIndex, 0).toString());
+				tname.setText(df.getValueAt(selectedIndex, 1).toString());
+				tdesc.setText(df.getValueAt(selectedIndex, 2).toString());
+				//tatten.setSelectedItem(selectedIndex);
+				//tstatus.setSelectedItem(selectedIndex);
+				tnotes.setText(df.getValueAt(selectedIndex, 5).toString());*/
+				
+			
+		
 		scrollPane.setFont(new Font("Arial", Font.PLAIN, 11));
 		scrollPane.setAutoscrolls(true);
 		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
 		scrollPane.setBounds(449, 41, 725, 372);
 		frmPhilippinesSupportForm.getContentPane().add(scrollPane);
 		
+		/*public static class fg extends JTextArea implements TableCellRenderer {
+		    fg() {
+		        setLineWrap(true);
+		        setWrapStyleWord(true);
+		    }}*/
+			
+		
 		table_7 = new JTable();
 		scrollPane.setViewportView(table_7);
 		table_7.getTableHeader().setBackground(Color.yellow);
 		model =new DefaultTableModel();
 		Object[] column={
-				"Date", "CustName", "IssueDesc", "AttenBy", "IssueStatus", "Notes"
+				"IssueID","Date", "CustName", "IssueDesc", "AttenBy", "IssueStatus", "Notes"
 			};
 		Object[] row=new Object[0];
 		model.setColumnIdentifiers(column);
+		//setLineWrap(true);
+        //setWrapStyleWord(true);
 		table_7.setModel(model);
 		
-		table_7.getColumnModel().getColumn(0).setPreferredWidth(100);
-		table_7.getColumnModel().getColumn(1).setPreferredWidth(100);
-		table_7.getColumnModel().getColumn(2).setPreferredWidth(300);
-		table_7.getColumnModel().getColumn(3).setPreferredWidth(100);
+		//table_7.getColumnModel().getColumn(5).setCellRenderer(new WordWrapCellRenderer());
+		table_7.getColumnModel().getColumn(0).setPreferredWidth(80);
+		table_7.getColumnModel().getColumn(1).setPreferredWidth(80);
+		table_7.getColumnModel().getColumn(2).setPreferredWidth(90);
+		table_7.getColumnModel().getColumn(3).setPreferredWidth(300);
 		table_7.getColumnModel().getColumn(4).setPreferredWidth(100);
-		table_7.getColumnModel().getColumn(5).setPreferredWidth(300);
+		table_7.getColumnModel().getColumn(5).setPreferredWidth(100);
+		table_7.getColumnModel().getColumn(6).setPreferredWidth(300);
 		
 		
 		
 			
 		
 		JButton sub1 = new JButton("Data to TableView");
+		sub1.setBorder(UIManager.getBorder("Button.border"));
 		sub1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
@@ -242,20 +307,22 @@ public class PhilStatus {
 				String Notes=tnotes.getText();
 				
 				
+				
+				
 				if(CustName.isEmpty()) {
 					//JOptionPane.showMessageDialog(, "Enter the Customer Name");}
-					JOptionPane.showMessageDialog((Component) e.getSource(),"Enter the Customer Name");}
+					JOptionPane.showMessageDialog(null,"Enter the Customer Name");}
 					else if (IssueDesc.isEmpty()) {
-						JOptionPane.showMessageDialog((Component) e.getSource(), "IssueDesc can't be empty");
+						JOptionPane.showMessageDialog(null, "IssueDesc can't be empty");
 				}
 					else if (AttenBy.isEmpty()) {
-					JOptionPane.showMessageDialog((Component) e.getSource(), "AttenBy can't be empty");}
+					JOptionPane.showMessageDialog(null, "AttenBy can't be empty");}
 					else if (date.isEmpty()) {
-						JOptionPane.showMessageDialog((Component) e.getSource(), "Date can't be empty");}
+						JOptionPane.showMessageDialog(null, "Date can't be empty");}
 					else if (issueStatus.isEmpty()) {
-					JOptionPane.showMessageDialog((Component) e.getSource(), "issueStatus can't be empty");}
+					JOptionPane.showMessageDialog(null, "issueStatus can't be empty");}
 					else if (Notes.isEmpty()) {
-					JOptionPane.showMessageDialog((Component) e.getSource(), "Notes can't be empty");
+					JOptionPane.showMessageDialog(null, "Notes can't be empty");
 					
 				}
 				
@@ -270,47 +337,99 @@ public class PhilStatus {
 	
 		          model.addRow(rowData);
 		          
-		          /*String CAtten=tatten.getSelectedItem().toString();
-				  String Ctstatus=tstatus.getSelectedItem().toString();
-					
-		          if(CAtten != null || tstatus != null) {
-		          tname.setText("");
-					datei.setText("");
-					tdesc.setText("");
-					tatten.removeAllItems();
-					tstatus.removeAllItems();
-					tnotes.setText("");}*/
+		      
 			}}
 		});
 		sub1.setBounds(280, 515, 144, 72);
 		frmPhilippinesSupportForm.getContentPane().add(sub1);
 		
 		JButton btnNewButton_1 = new JButton("Clear");
-		btnNewButton_1.setBorder(new CompoundBorder());
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				String CAtten=tatten.getSelectedItem().toString();
-				String Ctstatus=tstatus.getSelectedItem().toString();
+				String CustName=tname.getText();
+				String date= datei.getText();
+				String IssueDesc=tdesc.getText();
+				String AttenBy=tatten.getSelectedItem().toString();
+				String issueStatus=tstatus.getSelectedItem().toString();
+				String Notes=tnotes.getText();
 				
-				if(CAtten != null || tstatus != null) {
-				tname.setText("");
-				datei.setText("");
-				tdesc.setText("");
-				tatten.getSelectedItem().equals(0);
-				tstatus.getSelectedItem().equals(0);
-				tnotes.setText("");}
+				//if (CustName !=null || date !=null || IssueDesc !=null || Notes !=null) 
+				
+				if(CustName.isEmpty() || date.isEmpty() || IssueDesc.isEmpty() || Notes.isEmpty() ) {
+					
+					
+					JOptionPane.showMessageDialog(null, "Field has null values");
+					
+				} else {
+					
+					
+					
+					tname.setText("");
+					datei.setText("");
+					tdesc.setText("");
+					tnotes.setText("");
+				}
+			}
+		});
+
+			
+		
+		btnNewButton_1.setBounds(459, 515, 144, 72);
+		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_1);
+		
+		JButton btnNewButton_2 = new JButton("Edit");
+		
+		
+		
+		btnNewButton_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			
+				
+			
+			}
+			});
+		
+		
+	
+			
+		btnNewButton_2.setBounds(637, 515, 144, 72);
+		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_2);
+		
+		JButton btnNewButton_3 = new JButton("Fetch Data");
+		btnNewButton_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				try {
+					//Class.forName("com.mysql.cj.jdbc.Driver");
+					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+					
+					PreparedStatement insert = con.prepareStatement("select * from apglobal");
+					
+					ResultSet rs= insert.executeQuery();
+					table_7.setModel(DbUtils.resultSetToTableModel(rs));
+					
+					JOptionPane.showMessageDialog(null, "Data Fetch Success");
+					
+				} 
+				 catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					//e1.printStackTrace();
+					 
+					 JOptionPane.showMessageDialog(null, "Error fetching SQL data");
+				} 
+				
 				
 			}
 		});
-		btnNewButton_1.setBounds(459, 515, 144, 72);
-		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_1);
+		btnNewButton_3.setBounds(806, 515, 144, 72);
+		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_3);
 	
-		
+	
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				
+				int ID;
 				String CustName=tname.getText();
 				String date= datei.getText();
 				String IssueDesc=tdesc.getText();
@@ -322,26 +441,29 @@ public class PhilStatus {
    		
     				Class.forName("com.mysql.cj.jdbc.Driver");
     				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+    				
+    				
     				PreparedStatement insert = con.prepareStatement("insert into apglobal(Date,CustName,IssueDesc,AttenBy,issueStatus,Notes)values(?,?,?,?,?,?)");
     				
     				if(CustName.isEmpty()) {
     					//JOptionPane.showMessageDialog(, "Enter the Customer Name");}
-    					JOptionPane.showMessageDialog((Component) e.getSource(),"Enter the Customer Name");}
+    					JOptionPane.showMessageDialog(null,"Enter the Customer Name");}
     					else if (IssueDesc.isEmpty()) {
-    						JOptionPane.showMessageDialog((Component) e.getSource(), "IssueDesc can't be empty");
+    						JOptionPane.showMessageDialog(null, "IssueDesc can't be empty");
     				}
     					else if (AttenBy.isEmpty()) {
-    					JOptionPane.showMessageDialog((Component) e.getSource(), "AttenBy can't be empty");}
+    					JOptionPane.showMessageDialog(null, "AttenBy can't be empty");}
     					else if (date.isEmpty()) {
-    						JOptionPane.showMessageDialog((Component) e.getSource(), "Date can't be empty");}
+    						JOptionPane.showMessageDialog(null, "Date can't be empty");}
     					else if (issueStatus.isEmpty()) {
-    					JOptionPane.showMessageDialog((Component) e.getSource(), "issueStatus can't be empty");}
+    					JOptionPane.showMessageDialog(null, "issueStatus can't be empty");}
     					else if (Notes.isEmpty()) {
-    					JOptionPane.showMessageDialog((Component) e.getSource(), "Notes can't be empty");
+    					JOptionPane.showMessageDialog(null, "Notes can't be empty");
     					
     				}
     					
     				else {
+    					//insert.setInt(0, IssueID);
     					insert.setString(1, date);
     					insert.setString(2, CustName);
     					insert.setString(3, IssueDesc);
@@ -361,6 +483,11 @@ public class PhilStatus {
     						tatten.removeAllItems();
     						tstatus.removeAllItems();
     						tnotes.setText("");}*/
+    					 tname.setText("");
+ 						datei.setText("");
+ 						tdesc.setText("");
+ 						tnotes.setText("");
+ 						tname.requestFocus();
 
     				}
     				
@@ -371,12 +498,26 @@ public class PhilStatus {
     				
     			 catch (Exception e1) {
     				
-    				 JOptionPane.showMessageDialog((Component) e.getSource(), "Error- Add the issue again");
+    				 JOptionPane.showMessageDialog(null, "Error- Add the issue again");
+    				 e1.printStackTrace();
     				 
     			}
 			}
 		});
-	}}
+	}
+}
+
+	
+			
+			
+		
+	
+
+		
+
+			
+	
+	
 			
 	
 	
