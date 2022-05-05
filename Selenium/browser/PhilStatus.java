@@ -378,14 +378,39 @@ public class PhilStatus  {
 		btnNewButton_1.setBounds(459, 515, 144, 72);
 		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_1);
 		
-		JButton btnNewButton_2 = new JButton("Edit");
+		JButton btnNewButton_2 = new JButton("Update");
 		
 		
 		
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			
+				String CustName=tname.getText();
+				String date= datei.getText();
+				String IssueDesc=tdesc.getText();
+				String AttenBy=tatten.getSelectedItem().toString();
+				String issueStatus=tstatus.getSelectedItem().toString();
+				String Notes=tnotes.getText();
 				
+				try {
+					//Class.forName("com.mysql.cj.jdbc.Driver");
+					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+					
+					PreparedStatement insert = con.prepareStatement("select * from apglobal");
+					
+					ResultSet rs= insert.executeQuery();
+					table_7.setModel(DbUtils.resultSetToTableModel(rs));
+					
+					JOptionPane.showMessageDialog(null, "Update Success");
+					
+				} 
+				 catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					//e1.printStackTrace();
+					 
+					 JOptionPane.showMessageDialog(null, "Update failed");
+					 e1.printStackTrace();
+				} 
 			
 			}
 			});
