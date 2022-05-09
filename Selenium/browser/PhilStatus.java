@@ -22,6 +22,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -56,41 +58,49 @@ import javax.swing.UIManager;
 
 public class PhilStatus  {
 
-	private JFrame frmPhilippinesSupportForm;
-	JComboBox tatten;
-	JLabel DateOfIssue;
-	JLabel title;
-	JTextArea datei;
-    JComboBox month;
-    JComboBox year;
-	JLabel CustomerName;
-	JTextField tname;
-	JTextArea tdesc;
-	JComboBox tstatus;
-	JTextArea tnotes;
-	JLabel IssueDescription;
-	JLabel AttendedBy;
-	JLabel IssueStatus;
-	JButton sub;
-	JButton sub1;
-	JTable table;
-	DefaultTableModel model;
+	public JFrame frmPhilippinesSupportForm;
+	public JComboBox tatten;
+	public JLabel DateOfIssue;
+	public JLabel title;
+	public JTextField datei;
+	public JComboBox month;
+	public JComboBox year;
+	public JLabel CustomerName;
+	public JTextField tname;
+	public JTextArea tdesc;
+	public JComboBox tstatus;
+	public JTextArea tnotes;
+	public JLabel IssueDescription;
+	public JLabel AttendedBy;
+	public JLabel IssueStatus;
+	public JButton sub;
+	public JButton sub1;
+	public JTable table;
+	public Connection con;
+	public JTextField tid;
+	public DefaultTableModel model;
+	public String CustName;
+	public String date;
+	public String IssueDesc;
+	public String AttenBy;
+	public String issueStatus;
+	public String Notes;
+	PreparedStatement insert;
 	
 	
 	
 	
-	private String tattens[]
+	
+	public String tattens[]
     		={"","DV/Sujith","Sujith","DV"};
 	
-	private String IssueStatusd[]
+	public String IssueStatusd[]
     		={"","InProgress","Resolved","Closed", "PartialCompleted"};
 	
 
 
-	private JTable table_7;
-	/**
-	 * Launch the application.
-	 */
+	public JTable table_7;
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -106,18 +116,56 @@ public class PhilStatus  {
 
 	/**
 	 * Create the application.
+	 * @throws SQLException 
 	 */
-	public PhilStatus() {
+	public PhilStatus() throws SQLException {
 		initialize();
+		dbconnect();
+		//update jj= new update();
+		
 	}
 
+	/** DB connection
+	 * @throws SQLException 
+	 * 
+	 */
 	
+	public void dbconnect() throws SQLException{
+	
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+	}
+	
+	
+	/* variable declaration
+	 * 
+	 */
 
+	/*public void vdeclaration() {
+		
+		int ID;
+		String CustName=tname.getText();
+		String date= datei.getText();
+		String IssueDesc=tdesc.getText();
+		String AttenBy=tatten.getSelectedItem().toString();
+		String issueStatus=tstatus.getSelectedItem().toString();
+		String Notes=tnotes.getText();
+		Date dates;
+
+	}*/
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	@SuppressWarnings("serial")
-	private void initialize() {
+	public void initialize() {
 		frmPhilippinesSupportForm = new JFrame();
 		frmPhilippinesSupportForm.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\DHINAKARAN\\Desktop\\Capture.PNG"));
 		frmPhilippinesSupportForm.setType(Type.POPUP);
@@ -164,7 +212,7 @@ public class PhilStatus  {
 		lblNewLabel_2.setBounds(25, 207, 57, 29);
 		frmPhilippinesSupportForm.getContentPane().add(lblNewLabel_2);
 		
-		datei = new JTextArea();
+		datei = new JTextField();
 		datei.setBounds(132, 211, 195, 22);
 		datei.setFont(new Font("Arial", Font.PLAIN, 13));
 		datei.setToolTipText("Enter the Date in YYYY-DD-MM");
@@ -216,13 +264,8 @@ public class PhilStatus  {
 					int row =table_7.getSelectedRow();
 					
 					String Date=(String) (table_7.getModel().getValueAt(row, 0)).toString();
-					//String CustName=(String) (table_7.getModel().getValueAt(row, 1)).toString();
-					//String IssueDesc=(String) (table_7.getModel().getValueAt(row, 2)).toString();
-					//String Notes=(String) (table_7.getModel().getValueAt(row, 5)).toString();
 					
-					
-					Class.forName("com.mysql.cj.jdbc.Driver");
-    				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
+					dbconnect();
     				PreparedStatement insert = con.prepareStatement("SELECT * FROM apglobal where Date='"+Date+"' ");
     				insert.setString(3, (String)tatten.getSelectedItem());
     				insert.setString(4, (String)tatten.getSelectedItem());
@@ -244,14 +287,6 @@ public class PhilStatus  {
 			}
 		});
 				
-				/*DefaultTableModel df=(DefaultTableModel)table_7.getModel();
-				int selectedIndex=table_7.getSelectedRow();
-				datei.setText(df.getValueAt(selectedIndex, 0).toString());
-				tname.setText(df.getValueAt(selectedIndex, 1).toString());
-				tdesc.setText(df.getValueAt(selectedIndex, 2).toString());
-				//tatten.setSelectedItem(selectedIndex);
-				//tstatus.setSelectedItem(selectedIndex);
-				tnotes.setText(df.getValueAt(selectedIndex, 5).toString());*/
 				
 			
 		
@@ -261,14 +296,54 @@ public class PhilStatus  {
 		scrollPane.setBounds(449, 41, 725, 372);
 		frmPhilippinesSupportForm.getContentPane().add(scrollPane);
 		
-		/*public static class fg extends JTextArea implements TableCellRenderer {
-		    fg() {
-		        setLineWrap(true);
-		        setWrapStyleWord(true);
-		    }}*/
+	
 			
 		
 		table_7 = new JTable();
+		table_7.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				int row =table_7.getSelectedRow();
+				
+				//int ID;
+				tid.setText(table_7.getModel().getValueAt(row, 0).toString());
+				tname.setText(table_7.getModel().getValueAt(row,2 ).toString());
+				datei.setText(table_7.getModel().getValueAt(row, 1).toString());
+				tdesc.setText(table_7.getModel().getValueAt(row, 3).toString());
+				//tatten.setSelectedItem(table_7.getModel().getValueAt(row, 2)).toString();
+				//tstatus.getSelectedItem().toString();
+				tnotes.setText(table_7.getModel().getValueAt(row, 6).toString());
+				String attby=table_7.getModel().getValueAt(row, 4).toString();
+				String isstatus=table_7.getModel().getValueAt(row,5).toString();
+				
+				
+				System.out.println(attby);
+				
+				
+				for (int i = 0; i < tatten.getItemCount(); i++) {
+					
+				if (tatten.getItemAt(i).toString().equalsIgnoreCase(attby)) {
+					
+					tatten.setSelectedIndex(i);
+					
+					
+				}
+				
+				for (int j = 0; j < tstatus.getItemCount(); j++) {
+					
+					if (tstatus.getItemAt(j).toString().equalsIgnoreCase(isstatus)) {
+						
+						tstatus.setSelectedIndex(j);
+						
+					}
+				
+								
+			}
+				}
+			}
+		});
+		
 		scrollPane.setViewportView(table_7);
 		table_7.getTableHeader().setBackground(Color.yellow);
 		model =new DefaultTableModel();
@@ -277,11 +352,10 @@ public class PhilStatus  {
 			};
 		Object[] row=new Object[0];
 		model.setColumnIdentifiers(column);
-		//setLineWrap(true);
-        //setWrapStyleWord(true);
+		
 		table_7.setModel(model);
 		
-		//table_7.getColumnModel().getColumn(5).setCellRenderer(new WordWrapCellRenderer());
+		
 		table_7.getColumnModel().getColumn(0).setPreferredWidth(80);
 		table_7.getColumnModel().getColumn(1).setPreferredWidth(80);
 		table_7.getColumnModel().getColumn(2).setPreferredWidth(90);
@@ -299,18 +373,20 @@ public class PhilStatus  {
 		sub1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				String CustName=tname.getText();
-				String date= datei.getText();
-				String IssueDesc=tdesc.getText();
-				String AttenBy=tatten.getSelectedItem().toString();
-				String issueStatus=tstatus.getSelectedItem().toString();
-				String Notes=tnotes.getText();
+				int ID;
+			    CustName=tname.getText();
+				date= datei.getText();
+				 IssueDesc=tdesc.getText();
+				 AttenBy=tatten.getSelectedItem().toString();
+				 issueStatus=tstatus.getSelectedItem().toString();
+				 Notes=tnotes.getText();
+				
 				
 				
 				
 				
 				if(CustName.isEmpty()) {
-					//JOptionPane.showMessageDialog(, "Enter the Customer Name");}
+					
 					JOptionPane.showMessageDialog(null,"Enter the Customer Name");}
 					else if (IssueDesc.isEmpty()) {
 						JOptionPane.showMessageDialog(null, "IssueDesc can't be empty");
@@ -327,9 +403,9 @@ public class PhilStatus  {
 				}
 				
 					else {
-				Vector<String> rowData = new Vector<String>();  // create a row Vector
+				Vector<String> rowData = new Vector<String>();  
 				rowData.add(datei.getText());
-				rowData.add(tname.getText());    // fill it with data from JTextFields
+				rowData.add(tname.getText());    
 		         rowData.add(tdesc.getText());
 		         rowData.add(tatten.getSelectedItem().toString());
 		         rowData.add(tstatus.getSelectedItem().toString());
@@ -347,14 +423,14 @@ public class PhilStatus  {
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				String CustName=tname.getText();
-				String date= datei.getText();
-				String IssueDesc=tdesc.getText();
-				String AttenBy=tatten.getSelectedItem().toString();
-				String issueStatus=tstatus.getSelectedItem().toString();
-				String Notes=tnotes.getText();
+				 CustName=tname.getText();
+				 date= datei.getText();
+				 IssueDesc=tdesc.getText();
+				 AttenBy=tatten.getSelectedItem().toString();
+				 issueStatus=tstatus.getSelectedItem().toString();
+				 Notes=tnotes.getText();
 				
-				//if (CustName !=null || date !=null || IssueDesc !=null || Notes !=null) 
+				
 				
 				if(CustName.isEmpty() || date.isEmpty() || IssueDesc.isEmpty() || Notes.isEmpty() ) {
 					
@@ -385,28 +461,35 @@ public class PhilStatus  {
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			
-				String CustName=tname.getText();
-				String date= datei.getText();
-				String IssueDesc=tdesc.getText();
-				String AttenBy=tatten.getSelectedItem().toString();
-				String issueStatus=tstatus.getSelectedItem().toString();
-				String Notes=tnotes.getText();
+				
+					
 				
 				try {
-					//Class.forName("com.mysql.cj.jdbc.Driver");
-					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
 					
-					PreparedStatement insert = con.prepareStatement("select * from apglobal");
 					
-					ResultSet rs= insert.executeQuery();
-					table_7.setModel(DbUtils.resultSetToTableModel(rs));
 					
-					JOptionPane.showMessageDialog(null, "Update Success");
+					dbconnect();
+					//PreparedStatement insert = con.prepareStatement("update apglobal set CustName=?,date=?,IssueDesc=?,AttenBy=?,issueStatus=?,Notes=? where ID=?");
+					PreparedStatement insert = con.prepareStatement("update apglobal set CustName='"+tname.getText()+"',date='"+datei.getText()+"',IssueDesc='"+tdesc.getText()+"',AttenBy='"+tatten.getSelectedItem().toString()+"',issueStatus='"+tstatus.getSelectedItem().toString()+"',Notes='"+tnotes.getText()+"' where ID='"+tid.getText()+"'");
+					
+					if(tname.getText().isEmpty() || datei.getText().isEmpty() || tdesc.getText().isEmpty() || tnotes.getText().isEmpty() ) {
+						
+						
+						JOptionPane.showMessageDialog(null, "Empty Fields");
+					
+					
+					
 					
 				} 
+				else
+				{
+					((PreparedStatement) insert).executeUpdate();
+					JOptionPane.showMessageDialog(null, "Update Success");
+					
+				}}
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
-					//e1.printStackTrace();
+					
 					 
 					 JOptionPane.showMessageDialog(null, "Update failed");
 					 e1.printStackTrace();
@@ -414,7 +497,7 @@ public class PhilStatus  {
 			
 			}
 			});
-		
+	
 		
 	
 			
@@ -426,9 +509,8 @@ public class PhilStatus  {
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
-					//Class.forName("com.mysql.cj.jdbc.Driver");
-					Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
-					
+				
+					dbconnect();
 					PreparedStatement insert = con.prepareStatement("select * from apglobal");
 					
 					ResultSet rs= insert.executeQuery();
@@ -439,7 +521,7 @@ public class PhilStatus  {
 				} 
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
-					//e1.printStackTrace();
+					
 					 
 					 JOptionPane.showMessageDialog(null, "Error fetching SQL data");
 				} 
@@ -449,29 +531,83 @@ public class PhilStatus  {
 		});
 		btnNewButton_3.setBounds(806, 515, 144, 72);
 		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_3);
+		
+		JButton btnNewButton_4 = new JButton("Delete");
+		btnNewButton_4.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+try {
+					
+					
+					
+					dbconnect();
+					//PreparedStatement insert = con.prepareStatement("update apglobal set CustName=?,date=?,IssueDesc=?,AttenBy=?,issueStatus=?,Notes=? where ID=?");
+					PreparedStatement insert = con.prepareStatement("delete from apglobal where ID='"+tid.getText()+"'");
+					
+					if(tname.getText().isEmpty() || datei.getText().isEmpty() || tdesc.getText().isEmpty() || tnotes.getText().isEmpty() ) {
+						
+						
+						JOptionPane.showMessageDialog(null, "Empty Fields");
+					
+					
+					
+					
+				} 
+				else
+				{
+					((PreparedStatement) insert).executeUpdate();
+					JOptionPane.showMessageDialog(null, "Delete Success");
+					
+				}}
+				 catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					
+					 
+					 JOptionPane.showMessageDialog(null, "Update failed");
+					 e1.printStackTrace();
+				} 
+				
+				
+			}
+		});
+		btnNewButton_4.setBounds(966, 515, 144, 72);
+		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_4);
+		
+		JLabel lblNewLabel_6 = new JLabel("ID");
+		lblNewLabel_6.setBounds(36, 441, 58, 14);
+		frmPhilippinesSupportForm.getContentPane().add(lblNewLabel_6);
+		
+		tid = new JTextField();
+		tid.setEditable(false);
+		tid.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		tid.setBounds(132, 438, 86, 20);
+		frmPhilippinesSupportForm.getContentPane().add(tid);
+		tid.setColumns(10);
 	
 	
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
 				int ID;
-				String CustName=tname.getText();
-				String date= datei.getText();
-				String IssueDesc=tdesc.getText();
-				String AttenBy=tatten.getSelectedItem().toString();
-				String issueStatus=tstatus.getSelectedItem().toString();
-				String Notes=tnotes.getText();
+				 CustName=tname.getText();
+				 date= datei.getText();
+				 IssueDesc=tdesc.getText();
+				 AttenBy=tatten.getSelectedItem().toString();
+				 issueStatus=tstatus.getSelectedItem().toString();
+				 Notes=tnotes.getText();
+			
     			
     			try {
    		
-    				Class.forName("com.mysql.cj.jdbc.Driver");
-    				Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/philstatus","root","Aperta123!");
-    				
+    		
+    				dbconnect();
     				
     				PreparedStatement insert = con.prepareStatement("insert into apglobal(Date,CustName,IssueDesc,AttenBy,issueStatus,Notes)values(?,?,?,?,?,?)");
     				
+    				
+    				
     				if(CustName.isEmpty()) {
-    					//JOptionPane.showMessageDialog(, "Enter the Customer Name");}
+    					
     					JOptionPane.showMessageDialog(null,"Enter the Customer Name");}
     					else if (IssueDesc.isEmpty()) {
     						JOptionPane.showMessageDialog(null, "IssueDesc can't be empty");
@@ -488,7 +624,7 @@ public class PhilStatus  {
     				}
     					
     				else {
-    					//insert.setInt(0, IssueID);
+    					
     					insert.setString(1, date);
     					insert.setString(2, CustName);
     					insert.setString(3, IssueDesc);
@@ -496,18 +632,9 @@ public class PhilStatus  {
     					insert.setString(5, issueStatus);
     					insert.setString(6, Notes);
     					((PreparedStatement) insert).executeUpdate();
-    					JOptionPane.showMessageDialog((Component) e.getSource(), "Issue Added successfully");
+    					JOptionPane.showMessageDialog(null, "Issue Added successfully");
     					
-    					/*String CAtten=tatten.getSelectedItem().toString();
-    					  String Ctstatus=tstatus.getSelectedItem().toString();
-    						
-    			          if(CAtten != null || tstatus != null) {
-    			          tname.setText("");
-    						datei.setText("");
-    						tdesc.setText("");
-    						tatten.removeAllItems();
-    						tstatus.removeAllItems();
-    						tnotes.setText("");}*/
+    					
     					 tname.setText("");
  						datei.setText("");
  						tdesc.setText("");
@@ -530,6 +657,8 @@ public class PhilStatus  {
 			}
 		});
 	}
+
+	
 }
 
 	
