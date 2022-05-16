@@ -40,9 +40,12 @@ import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.protocol.Resultset;
 import com.mysql.cj.result.Row;
 
+//import net.proteanit.sql.DbUtils;
+
+//import org.apache.poi.xssf.usermodel.XSSFSheet;
+//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import net.proteanit.sql.DbUtils;
-
-
 
 import javax.swing.border.BevelBorder;
 import java.awt.Font;
@@ -85,7 +88,7 @@ public class PhilStatus  {
 	public String AttenBy;
 	public String issueStatus;
 	public String Notes;
-	PreparedStatement insert;
+	public PreparedStatement insert;
 	
 	
 	
@@ -122,6 +125,7 @@ public class PhilStatus  {
 		initialize();
 		dbconnect();
 		//update jj= new update();
+		tformat();
 		
 	}
 
@@ -129,6 +133,17 @@ public class PhilStatus  {
 	 * @throws SQLException 
 	 * 
 	 */
+	
+	public void tformat() {
+		
+		table_7.getColumnModel().getColumn(0).setPreferredWidth(50);
+		table_7.getColumnModel().getColumn(1).setPreferredWidth(150);
+		table_7.getColumnModel().getColumn(2).setPreferredWidth(150);
+		table_7.getColumnModel().getColumn(3).setPreferredWidth(500);
+		table_7.getColumnModel().getColumn(4).setPreferredWidth(100);
+		table_7.getColumnModel().getColumn(5).setPreferredWidth(100);
+		table_7.getColumnModel().getColumn(6).setPreferredWidth(500);
+	}
 	
 	public void dbconnect() throws SQLException{
 	
@@ -356,69 +371,16 @@ public class PhilStatus  {
 		table_7.setModel(model);
 		
 		
-		table_7.getColumnModel().getColumn(0).setPreferredWidth(80);
-		table_7.getColumnModel().getColumn(1).setPreferredWidth(80);
-		table_7.getColumnModel().getColumn(2).setPreferredWidth(90);
-		table_7.getColumnModel().getColumn(3).setPreferredWidth(300);
-		table_7.getColumnModel().getColumn(4).setPreferredWidth(100);
-		table_7.getColumnModel().getColumn(5).setPreferredWidth(100);
-		table_7.getColumnModel().getColumn(6).setPreferredWidth(300);
+		tformat();
 		
 		
 		
 			
 		
-		JButton sub1 = new JButton("Data to TableView");
-		sub1.setBorder(UIManager.getBorder("Button.border"));
-		sub1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				int ID;
-			    CustName=tname.getText();
-				date= datei.getText();
-				 IssueDesc=tdesc.getText();
-				 AttenBy=tatten.getSelectedItem().toString();
-				 issueStatus=tstatus.getSelectedItem().toString();
-				 Notes=tnotes.getText();
-				
-				
-				
-				
-				
-				if(CustName.isEmpty()) {
-					
-					JOptionPane.showMessageDialog(null,"Enter the Customer Name");}
-					else if (IssueDesc.isEmpty()) {
-						JOptionPane.showMessageDialog(null, "IssueDesc can't be empty");
-				}
-					else if (AttenBy.isEmpty()) {
-					JOptionPane.showMessageDialog(null, "AttenBy can't be empty");}
-					else if (date.isEmpty()) {
-						JOptionPane.showMessageDialog(null, "Date can't be empty");}
-					else if (issueStatus.isEmpty()) {
-					JOptionPane.showMessageDialog(null, "issueStatus can't be empty");}
-					else if (Notes.isEmpty()) {
-					JOptionPane.showMessageDialog(null, "Notes can't be empty");
-					
-				}
-				
-					else {
-				Vector<String> rowData = new Vector<String>();  
-				rowData.add(datei.getText());
-				rowData.add(tname.getText());    
-		         rowData.add(tdesc.getText());
-		         rowData.add(tatten.getSelectedItem().toString());
-		         rowData.add(tstatus.getSelectedItem().toString());
-		         rowData.add(tnotes.getText());
-	
-		          model.addRow(rowData);
-		          
-		      
-			}}
-		});
-		sub1.setBounds(280, 515, 144, 72);
-		frmPhilippinesSupportForm.getContentPane().add(sub1);
 		
+				
+				
+			
 		JButton btnNewButton_1 = new JButton("Clear");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -445,6 +407,7 @@ public class PhilStatus  {
 					datei.setText("");
 					tdesc.setText("");
 					tnotes.setText("");
+					tid.setText("");
 				}
 			}
 		});
@@ -485,6 +448,11 @@ public class PhilStatus  {
 				{
 					((PreparedStatement) insert).executeUpdate();
 					JOptionPane.showMessageDialog(null, "Update Success");
+                    PreparedStatement insert1 = con.prepareStatement("select * from apglobal");
+					
+					ResultSet rs= insert1.executeQuery();
+					table_7.setModel(DbUtils.resultSetToTableModel(rs));
+					tformat();
 					
 				}}
 				 catch (SQLException e1) {
@@ -515,6 +483,8 @@ public class PhilStatus  {
 					
 					ResultSet rs= insert.executeQuery();
 					table_7.setModel(DbUtils.resultSetToTableModel(rs));
+					
+					tformat();
 					
 					JOptionPane.showMessageDialog(null, "Data Fetch Success");
 					
@@ -558,6 +528,12 @@ try {
 					((PreparedStatement) insert).executeUpdate();
 					JOptionPane.showMessageDialog(null, "Delete Success");
 					
+                    PreparedStatement insert1 = con.prepareStatement("select * from apglobal");
+					
+					ResultSet rs= insert1.executeQuery();
+					tformat();
+					table_7.setModel(DbUtils.resultSetToTableModel(rs));
+					
 				}}
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -583,6 +559,29 @@ try {
 		tid.setBounds(132, 438, 86, 20);
 		frmPhilippinesSupportForm.getContentPane().add(tid);
 		tid.setColumns(10);
+		
+		JButton btnNewButton_5 = new JButton("Export");
+		btnNewButton_5.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				try {
+					dbconnect();
+					PreparedStatement insert = con.prepareStatement("select * from apglobal");
+					ResultSet rs=insert.executeQuery();
+					// XSSFWorkbook workbook = new XSSFWorkbook();
+					 //XSSFSheet sheet = workbook.createSheet("PhilippinesSupport");
+					
+					
+					
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
+		btnNewButton_5.setBounds(255, 515, 144, 72);
+		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_5);
 	
 	
 		btnNewButton.addActionListener(new ActionListener() {
@@ -657,8 +656,6 @@ try {
 			}
 		});
 	}
-
-	
 }
 
 	
