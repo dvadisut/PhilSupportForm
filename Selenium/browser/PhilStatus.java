@@ -17,16 +17,21 @@ import javax.swing.JPopupMenu;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.servlet.jsp.tagext.TryCatchFinally;
 import javax.sql.RowSetMetaData;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -36,14 +41,26 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.drawingml.x2006.diagram.STArrowheadStyle;
+
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.protocol.Resultset;
 import com.mysql.cj.result.Row;
 
-//import net.proteanit.sql.DbUtils;
-
-//import org.apache.poi.xssf.usermodel.XSSFSheet;
-//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.*;
 
 import net.proteanit.sql.DbUtils;
 
@@ -89,16 +106,17 @@ public class PhilStatus  {
 	public String issueStatus;
 	public String Notes;
 	public PreparedStatement insert;
+	public JButton btnNewButton;
 	
-	
+	String excelFilePath;
 	
 	
 	
 	public String tattens[]
-    		={"","DV/Sujith","Sujith","DV"};
+    		={"","Paula","Sujith","Sathees","Sujith & Dhinakaran","Dhinakaran"};
 	
 	public String IssueStatusd[]
-    		={"","InProgress","Resolved","Closed", "PartialCompleted"};
+    		={"","Completed","InProgress","Issue Resolved","Closed", "Partially Completed","Remote Session","Request"};
 	
 
 
@@ -126,7 +144,9 @@ public class PhilStatus  {
 		dbconnect();
 		//update jj= new update();
 		tformat();
-		
+		//clear();
+		//buttonon();
+		//(e);
 	}
 
 	/** DB connection
@@ -158,6 +178,26 @@ public class PhilStatus  {
 	
 	}
 	
+	/*public void clear() {
+		
+		this.tname.setText("");
+		this.datei.setText("");
+		this.tdesc.setText("");
+		this.tnotes.setText("");
+		this.tid.setText("");
+		
+	}*/
+	
+	
+	
+	
+	
+	/*public void buttonstatus(boolean e) {
+		
+		btnNewButton.setEnabled(e);
+	}*/
+	
+
 	
 	/* variable declaration
 	 * 
@@ -187,6 +227,8 @@ public class PhilStatus  {
 		frmPhilippinesSupportForm.setTitle("Philippines Support Form");
 		frmPhilippinesSupportForm.setBounds(300, 90, 1200, 700);
 		frmPhilippinesSupportForm.getContentPane().setLayout(null);
+		
+		
 		
 		JLabel lblNewLabel = new JLabel("Cust Name");
 		lblNewLabel.setBounds(25, 34, 57, 29);
@@ -292,6 +334,7 @@ public class PhilStatus  {
     					tdesc.setText(rs.getString("IssueDesc"));
     					tnotes.setText(rs.getString("Notes"));
     					System.out.println(""+datei);
+    					//buttonstatus(false);
     				}
     				insert.close();
 				}
@@ -319,6 +362,8 @@ public class PhilStatus  {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				
+				btnNewButton.setEnabled(false);
+				
 				int row =table_7.getSelectedRow();
 				
 				//int ID;
@@ -332,7 +377,7 @@ public class PhilStatus  {
 				String attby=table_7.getModel().getValueAt(row, 4).toString();
 				String isstatus=table_7.getModel().getValueAt(row,5).toString();
 				
-				
+				btnNewButton.setEnabled(false);
 				System.out.println(attby);
 				
 				
@@ -385,6 +430,8 @@ public class PhilStatus  {
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
+				btnNewButton.setEnabled(true);
+				
 				 CustName=tname.getText();
 				 date= datei.getText();
 				 IssueDesc=tdesc.getText();
@@ -399,18 +446,21 @@ public class PhilStatus  {
 					
 					JOptionPane.showMessageDialog(null, "Field has null values");
 					
-				} else {
-					
-					
-					
+				} 
+				
+				else {
 					tname.setText("");
 					datei.setText("");
 					tdesc.setText("");
 					tnotes.setText("");
 					tid.setText("");
+
 				}
-			}
-		});
+					
+					
+				}
+			});
+		
 
 			
 		
@@ -424,7 +474,7 @@ public class PhilStatus  {
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			
-				
+				//buttonstatus(false);
 					
 				
 				try {
@@ -453,7 +503,13 @@ public class PhilStatus  {
 					ResultSet rs= insert1.executeQuery();
 					table_7.setModel(DbUtils.resultSetToTableModel(rs));
 					tformat();
-					
+					tname.setText("");
+					datei.setText("");
+					tdesc.setText("");
+					tnotes.setText("");
+					tid.setText("");
+					btnNewButton.setEnabled(true);
+					insert.close();
 				}}
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -462,7 +518,7 @@ public class PhilStatus  {
 					 JOptionPane.showMessageDialog(null, "Update failed");
 					 e1.printStackTrace();
 				} 
-			
+				
 			}
 			});
 	
@@ -475,9 +531,10 @@ public class PhilStatus  {
 		JButton btnNewButton_3 = new JButton("Fetch Data");
 		btnNewButton_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				btnNewButton.setEnabled(true);
 				
 				try {
-				
+					//buttonstatus(true);
 					dbconnect();
 					PreparedStatement insert = con.prepareStatement("select * from apglobal");
 					
@@ -487,7 +544,7 @@ public class PhilStatus  {
 					tformat();
 					
 					JOptionPane.showMessageDialog(null, "Data Fetch Success");
-					
+					insert.close();
 				} 
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -505,7 +562,7 @@ public class PhilStatus  {
 		JButton btnNewButton_4 = new JButton("Delete");
 		btnNewButton_4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				//buttonstatus(false);
 try {
 					
 					
@@ -533,7 +590,13 @@ try {
 					ResultSet rs= insert1.executeQuery();
 					tformat();
 					table_7.setModel(DbUtils.resultSetToTableModel(rs));
-					
+					tname.setText("");
+					datei.setText("");
+					tdesc.setText("");
+					tnotes.setText("");
+					tid.setText("");
+					btnNewButton.setEnabled(true);
+					insert.close();
 				}}
 				 catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -543,7 +606,7 @@ try {
 					 e1.printStackTrace();
 				} 
 				
-				
+               
 			}
 		});
 		btnNewButton_4.setBounds(966, 515, 144, 72);
@@ -564,22 +627,178 @@ try {
 		btnNewButton_5.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
+				
+				excelFilePath="Philpstatus.xlsx";
 				try {
+					
+					
 					dbconnect();
 					PreparedStatement insert = con.prepareStatement("select * from apglobal");
 					ResultSet rs=insert.executeQuery();
-					// XSSFWorkbook workbook = new XSSFWorkbook();
-					 //XSSFSheet sheet = workbook.createSheet("PhilippinesSupport");
+					
+					String filename = "D:\\java-2021-06\\Balance.XLS";  
+					//creating an instance of HSSFWorkbook class  
+					HSSFWorkbook workbook = new HSSFWorkbook();  
+					
+					
+					//invoking creatSheet() method and passing the name of the sheet to be created   
+					HSSFSheet sheet = workbook.createSheet("SupportLog");   
+					
+					
+					//sheet.autoSizeColumn(100000000);
+					sheet.setColumnWidth(0, 5000);
+					sheet.setColumnWidth(1, 5000);
+					sheet.setColumnWidth(2, 5000);
+					sheet.setColumnWidth(3, 5000);
+					sheet.setColumnWidth(4, 5000);
+					sheet.setColumnWidth(5, 5000);
+					sheet.setColumnWidth(6, 7000);
+					
+
+					
+					
+					//CellRangeAddress celladd=new  CellRangeAddress(null);
+					//sheet.addMergedRegion(new CellRangeAddress(1,1,1,2));
+
+					
+					//creating the 0th row using the createRow() method  
+					HSSFRow rowhead = sheet.createRow((short)0);  
+					//creating cell by using the createCell() method and setting the values to the cell by using the setCellValue() method  
 					
 					
 					
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+					HSSFRow row = sheet.createRow((short)1);  
+					//modifying the cell
+					
+					//rowhead.setHeight((short) 10);
+					
+					rowhead.setHeightInPoints(20);
+					
+					
+					HSSFCellStyle style = workbook.createCellStyle();
+					HSSFFont font = workbook.createFont();
+					
+					font.setFontName(HSSFFont.FONT_ARIAL);
+					font.setFontHeightInPoints((short)10);
+					font.setBold(true);
+				
+					style.setFont(font);
+					
+					style.setWrapText(true);
+					//sheet.setVerticallyCenter(true);
+					
+					
+					/*rowhead.createCell(0).setCellValue("ID");  
+					rowhead.createCell(1).setCellValue("Date");  
+					rowhead.createCell(2).setCellValue("Customer Name");  
+					rowhead.createCell(3).setCellValue("Issue Description");  
+					rowhead.createCell(4).setCellValue("Atten By");  
+					rowhead.createCell(5).setCellValue("Issue Status");
+					rowhead.createCell(6).setCellValue("Notes");*/
+					
+					for(int j = 0; j<=6; j++) {
+						rowhead.getCell(j).setCellStyle(style);
+						style.setWrapText(true);
+						//sheet.autoSizeColumn(j);
+					}
+					
+					
+					//CellStyle style1 = workbook.createCellStyle();
+			        style.setBorderBottom(BorderStyle.THICK);
+			        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+			        style.setBorderLeft(BorderStyle.THICK);
+			        style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+			        style.setBorderRight(BorderStyle.THICK);
+			        style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+			        style.setBorderTop(BorderStyle.THICK);
+			        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+			        style.setWrapText(true);
+			        
+			      /*  for(int j = 0; j<=6; j++) {
+						rowhead.getCell(j).setCellStyle(style);
+						//sheet.autoSizeColumn(j);
+						}*/
+					
+					//creating the 1st row  
+					//HSSFRow row = sheet.createRow((short)1);  
+					//inserting data in the first row  
+					/*row.createCell(0).setCellValue("1");  
+					row.createCell(1).setCellValue("John William");  
+					row.createCell(2).setCellValue("9999999");  
+					row.createCell(3).setCellValue("william.john@gmail.com");  
+					row.createCell(4).setCellValue("700000.00");  
+					//creating the 2nd row  
+					HSSFRow row1 = sheet.createRow((short)2);  
+					//inserting data in the second row  */
+					row.createCell(0).setCellValue("2");  
+					row.createCell(1).setCellValue("Math");  
+					row.createCell(2).setCellValue("On Normal flow inclearing checks will not hit Balancer screen. If any item hits in DCB, You need to defer the particular item and that item will move to the balancer screen - Request  Clarified");  
+					row.createCell(3).setCellValue("parker.mathew@gmail.com");  
+					row.createCell(4).setCellValue("200000.00");
+					
+			     /*   for(int i = 0; i<=6; i++) {
+						rowhead.getCell(i).setCellStyle(style);
+						//sheet.autoSizeColumn(i);
+						sheet.setVerticallyCenter(true);
+						style.setWrapText(true);
+						style.setShrinkToFit(true);
+						sheet.autoSizeColumn(100000000);
+												}*/
+
+					writeHeaderLine(sheet);
+					 
+		            writeDataLines(rs, workbook, sheet);
+					
+					FileOutputStream fileOut = new FileOutputStream(filename);  
+					workbook.write(fileOut);  
+					//closing the Stream  
+					fileOut.close();  
+					//closing the workbook  
+					workbook.close();  
+					//prints the message on the console  
+					 JOptionPane.showMessageDialog(null, "Excel file has been generated successfully");
+					System.out.println("Excel file has been generated successfully.");  
+					}   
+					catch (Exception e1)   
+					{  
+					e1.printStackTrace();  
+					}  
+					}
+
+			private void writeDataLines(ResultSet rs, HSSFWorkbook workbook, HSSFSheet sheet) {
+				HSSFRow headerRow = sheet.createRow(0);
+				 
+				
+				
+		        Cell headerCell = headerRow.createCell(0);
+		        headerCell.setCellValue("Course Name");
+		 
+		        headerCell = headerRow.createCell(1);
+		        headerCell.setCellValue("Student Name");
+		 
+		        headerCell = headerRow.createCell(2);
+		        headerCell.setCellValue("Timestamp");
+		 
+		        headerCell = headerRow.createCell(3);
+		        headerCell.setCellValue("Rating");
+		 
+		        headerCell = headerRow.createCell(4);
+		        headerCell.setCellValue("Comment");
 				
 			}
-		});
+
+			private void writeHeaderLine(HSSFSheet sheet) {
+				// TODO Auto-generated method stub
+				
+			}  
+					
+
+			
+		 
+		
+	});
+
+		
 		btnNewButton_5.setBounds(255, 515, 144, 72);
 		frmPhilippinesSupportForm.getContentPane().add(btnNewButton_5);
 	
@@ -594,15 +813,15 @@ try {
 				 AttenBy=tatten.getSelectedItem().toString();
 				 issueStatus=tstatus.getSelectedItem().toString();
 				 Notes=tnotes.getText();
-			
+				// buttonstatus(true);
     			
     			try {
    		
     		
     				dbconnect();
     				
-    				PreparedStatement insert = con.prepareStatement("insert into apglobal(Date,CustName,IssueDesc,AttenBy,issueStatus,Notes)values(?,?,?,?,?,?)");
-    				
+    				PreparedStatement insert = con.prepareStatement("insert ignore into apglobal(Date,CustName,IssueDesc,AttenBy,issueStatus,Notes)values(?,?,?,?,?,?)");
+    				PreparedStatement insert1 = con.prepareStatement("select * from apglobal");
     				
     				
     				if(CustName.isEmpty()) {
@@ -634,15 +853,26 @@ try {
     					JOptionPane.showMessageDialog(null, "Issue Added successfully");
     					
     					
-    					 tname.setText("");
+    					
+ 						
+ 						
+ 						
+ 						ResultSet rs= insert1.executeQuery();
+ 						table_7.setModel(DbUtils.resultSetToTableModel(rs));
+ 						
+ 						tformat();
+ 						
+ 						tname.setText("");
  						datei.setText("");
  						tdesc.setText("");
  						tnotes.setText("");
+ 						tid.setText("");
+
  						tname.requestFocus();
 
     				}
     				
-    	
+    				insert.close();
     			
     			}
     		
@@ -653,6 +883,7 @@ try {
     				 e1.printStackTrace();
     				 
     			}
+    			
 			}
 		});
 	}
